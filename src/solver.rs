@@ -10,7 +10,8 @@ impl Solver {
         Solver { tile_box }
     }
 
-    pub fn solve(&mut self, _max_depth: usize) -> Vec<usize> {
+    // Solves the TileBox puzzle and returns the sequence of clicks in numpad notation
+    pub fn solve(&mut self) -> Vec<usize> {
         // TODO: multithread and caching
         match self.bfs() {
             Some(solution) => Self::map_sol_to_numpad_notation(solution),
@@ -18,6 +19,7 @@ impl Solver {
         }
     }
 
+    // Maps internal 0-8 indexing to numpad notation
     fn map_sol_to_numpad_notation(solution: Vec<usize>) -> Vec<usize> {
         let mut mapping = HashMap::new();
         mapping.insert(0, 7);
@@ -39,6 +41,7 @@ impl Solver {
         queue.push_back((root, vec![]));
         while let Some((current_box, path)) = queue.pop_front() {
             if current_box.is_solved() {
+                println!("Solution found: {:?}", path);
                 return Some(path);
             }
 
@@ -46,7 +49,7 @@ impl Solver {
                 let mut new_box = current_box.clone();
                 new_box.simulate_click(i);
                 if new_box == current_box {
-                    continue; // Skip no-op moves
+                    continue; // Skip branches with moves that do not change the state of the box
                 }
 
                 if !visited.contains(&new_box) {
@@ -57,6 +60,7 @@ impl Solver {
                 }
             }
         }
-        None
+        println!("No solution found");
+        None // No solution found
     }
 }
