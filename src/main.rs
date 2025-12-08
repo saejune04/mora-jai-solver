@@ -2,9 +2,9 @@ use mora_jai_solver::{Color, Solver, TileBox};
 fn main() {
     let max_depth = 20;
     let data = [
-        Color::Black, Color::Black, Color::Black,
-        Color::Green, Color::Black, Color::Grey,
-        Color::Grey, Color::Grey, Color::Purple,
+        Color::Orange, Color::Grey, Color::Blue,
+        Color::Blue, Color::Orange, Color::Black,
+        Color::Yellow, Color::Grey, Color::Green,
     ];
 
     // Define what the *goal corner color* is

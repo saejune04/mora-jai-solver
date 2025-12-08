@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 const MIDDLE_INDEX: usize = 4;
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug, Eq, Hash)]
 pub struct TileBox {
     // TileBox is a 3x3 grid of colors represented by a 1D array
     // The array is indexed row-wise from top-left to bottom-right
@@ -113,25 +113,20 @@ impl TileBox {
 
         // Count adjacent colors
         let mut color_count: HashMap<Color, usize> = HashMap::new();
-        for y in -1..=1 {
-            for x in -1..=1 {
-                if y == 0 && x == 0 {
-                    continue;
-                }
-                let new_row = row as isize + y;
-                let new_col = col as isize + x;
-                if new_row < 0 || new_row > 2 || new_col < 0 || new_col > 2 {
-                    continue;
-                }
-                let neighbor_index = (new_row as usize) * 3 + (new_col as usize);
-                
-                // Count colors of neighbors
-                let count = color_count.entry(self.data[neighbor_index]).or_insert(0);
-                *count += 1;
+        let directions = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+        for (dy, dx) in directions.iter() {
+            let new_row = row as isize + dy;
+            let new_col = col as isize + dx;
+            if new_row < 0 || new_row > 2 || new_col < 0 || new_col > 2 {
+                continue;
             }
+            let neighbor_index = (new_row as usize) * 3 + (new_col as usize);
+            
+            // Count colors of neighbors
+            let count = color_count.entry(self.data[neighbor_index]).or_insert(0);
+            *count += 1;
         }
 
-        // Find majority color if exists
         let mut majority_color: Option<Color> = None;
         let mut sole_majority = true;
         let mut max_count = 0;
