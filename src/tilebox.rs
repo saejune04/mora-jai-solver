@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 const MIDDLE_INDEX: usize = 4;
 
-#[derive(Clone)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct TileBox {
     // TileBox is a 3x3 grid of colors represented by a 1D array
     // The array is indexed row-wise from top-left to bottom-right

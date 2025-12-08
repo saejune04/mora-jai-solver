@@ -1,6 +1,6 @@
 use mora_jai_solver::{Color, Solver, TileBox};
 fn main() {
-    let max_depth = 12;
+    let max_depth = 20;
     let data = [
         Color::Black, Color::Black, Color::Black,
         Color::Green, Color::Black, Color::Grey,

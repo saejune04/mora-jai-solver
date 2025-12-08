@@ -1,6 +1,6 @@
 use crate::tilebox::TileBox;
-use threadpool::Builder;
-use crossbeam::channel;
+use rayon::prelude::*;
+use std::sync::{ Arc, atomic::{ AtomicBool, Ordering } };
 
 pub struct Solver {
     tile_box: TileBox,
@@ -20,54 +20,55 @@ impl Solver {
     }
 
     fn brute_force_multithreaded(&mut self, max_depth: usize) -> Option<Vec<usize>> {
-        let pool = Builder::new().build();
-        println!("Starting solver with {} threads", pool.max_count());
+        // Use an atomic flag to signal all threads to stop once a solution is found
+        let found_flag = Arc::new(AtomicBool::new(false));
 
-        let (result_tx, result_rx) = channel::unbounded::<Vec<usize>>();
+        // Iterative Deepening
+        for depth in 1..=max_depth {
+            println!("Trying depth {}", depth);
 
-        let mut curr_depth = 1usize;
+            // Parallelize over the initial move
+            let result = (0..9).into_par_iter().find_map_any(|first_move| {
+                if found_flag.load(Ordering::Relaxed) {
+                    return None;
+                }
 
-        // Clone the initial box state,
-        // Formulate the next set of moves for the current depth,
-        // Test the moves on the cloned box and see if we get a solved state
-        // If we tested all moves at the current depth without success, increase depth and repeat
-        while curr_depth <= max_depth {
-            let mut moves = vec![0usize; curr_depth];
-
-            loop {
-                let mut moves_clone = moves.clone();
-                let result_tx_clone = result_tx.clone();
-                let box_clone = self.tile_box.clone();
-                pool.execute(move || {
-                    let current_box = box_clone.clone();
-                    if Solver::test_moves_on_box(&Solver { tile_box: box_clone.clone() }, current_box, &mut moves_clone) {
-                        result_tx_clone.send(moves_clone).unwrap();
+                let mut moves = vec![first_move; depth];
+                loop {
+                    if found_flag.load(Ordering::Relaxed) {
+                        return None;
                     }
-                });
 
-                // Get the next set of moves to test
-                if !Solver::increment_moves(&mut moves, 9) {
-                    break;
-                } 
-            } 
-            pool.join();
-            // Check for results
-            if let Ok(solution) = result_rx.try_recv() {
+                    let current_box = self.tile_box.clone();
+                    if Solver::test_moves_on_box(current_box, &mut moves) {
+                        found_flag.store(true, Ordering::Relaxed);
+                        return Some(moves.clone());
+                    }
+
+                    if !Solver::increment_moves(&mut moves[1..], 9) {
+                        break;
+                    }
+                }
+                None
+            });
+            if let Some(solution) = result {
                 return Some(solution);
             }
-
-            curr_depth += 1;
-            println!("Increasing depth to {}", curr_depth);
-
         }
         None
     }
 
     // Give a TileBox and a set of moves, to perform, simulates the moves on the box
     // and returns whether or not the box is solved
-    fn test_moves_on_box(&self, mut current_box: TileBox, moves: &mut Vec<usize>) -> bool {
+    fn test_moves_on_box(mut current_box: TileBox, moves: &mut Vec<usize>) -> bool {
         for box_move in moves.iter() {
+            let old_box = current_box.clone();
             current_box.simulate_click(*box_move);
+
+            // Prune this set of moves if there is a move that does nothing
+            if old_box == current_box {
+                return false;
+            }
         }
         if current_box.is_solved() {
             return true;
