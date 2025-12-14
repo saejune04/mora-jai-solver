@@ -8,14 +8,15 @@ pub struct TileBox {
     // TileBox is a 3x3 grid of colors represented by a 1D array
     // The array is indexed row-wise from top-left to bottom-right
     data: [Color; 9],
-    solution_color: Color,
+    // The solution corner colors in order: top-left, top-right, bottom-left, bottom-right
+    solution_colors: [Color; 4],
 }
 
 impl TileBox {
-    pub fn new(data: Option<[Color; 9]>, solution_color: Color) -> Self {
+    pub fn new(data: Option<[Color; 9]>, solution_colors: [Color; 4]) -> Self {
         TileBox {
             data: data.unwrap_or([Color::Grey; 9]),
-            solution_color,
+            solution_colors,
         }
     }
     
@@ -32,10 +33,10 @@ impl TileBox {
 
     // Checks if all 4 corner tiles match the solution color
     pub fn is_solved(&self) -> bool {
-        return self.data[0] == self.solution_color &&
-               self.data[2] == self.solution_color &&
-               self.data[6] == self.solution_color &&
-               self.data[8] == self.solution_color;
+        return self.data[0] == self.solution_colors[0] &&
+               self.data[2] == self.solution_colors[1] &&
+               self.data[6] == self.solution_colors[2] &&
+               self.data[8] == self.solution_colors[3];
     }
 
     fn match_click_from_color(&mut self, color: Color, index: usize) {

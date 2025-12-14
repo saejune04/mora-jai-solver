@@ -41,7 +41,6 @@ impl Solver {
         queue.push_back((root, vec![]));
         while let Some((current_box, path)) = queue.pop_front() {
             if current_box.is_solved() {
-                println!("Solution found: {:?}", path);
                 return Some(path);
             }
 

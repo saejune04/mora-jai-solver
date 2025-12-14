@@ -1,16 +1,17 @@
-use mora_jai_solver::{Color, Solver, TileBox};
+use mora_jai_solver::{Solver, TileBox};
+use mora_jai_solver::Color::{Yellow, Grey, Red, White, Orange, Pink, Purple, Black, Green, Blue};
 fn main() {
     let data = [
-        Color::Orange, Color::Grey, Color::Blue,
-        Color::Blue, Color::Orange, Color::Black,
-        Color::Yellow, Color::Grey, Color::Green,
+        Pink, Black, Pink,
+        Orange, Grey, Orange,
+        Pink, Red, Pink,
     ];
 
-    // Define what the *goal corner color* is
-    let solution_color = Color::Black;
+    // Define what the *goal corner colors* are.
+    let solution_colors = [Orange, Red, Red, Orange];
 
     // Construct the TileBox
-    let tile_box = TileBox::new(Some(data), solution_color);
+    let tile_box = TileBox::new(Some(data), solution_colors);
 
     let mut solver = Solver::new(tile_box);
 
