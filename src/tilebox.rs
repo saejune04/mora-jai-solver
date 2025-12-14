@@ -88,18 +88,20 @@ impl TileBox {
     }
 
     fn click_white(&mut self, index: usize) {
-        // A white tile transforms all orthogonally adjacent tiles and itself,
-        // swapping them between white and grey.
+        // Transforms all orthogonally adjacent tiles of the same color and this tile to Grey,
+        // Turns any orthogonally adjacent grey tiles to this tile's color.
+        // Note: in the case of blue, it will use BLUE rather than WHITE
         let row = index / 3;
         let col = index % 3;
+        let curr_color = self.data[index];
 
         for i in 0..3 {
             for j in 0..3 {
                 if (row as isize - i as isize).abs() + (col as isize - j as isize).abs() <= 1 {
-                    if self.data[i * 3 + j] == Color::White {
+                    if self.data[i * 3 + j] == curr_color {
                         self.data[i * 3 + j] = Color::Grey;
                     } else if self.data[i * 3 + j] == Color::Grey {
-                        self.data[i * 3 + j] = Color::White;
+                        self.data[i * 3 + j] = curr_color;
                     }
                 }
             }
